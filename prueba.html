@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ciudadano.news | Experiencia Audiovisual</title>
+    <title>Ciudadano.news | Experiencia Mobile First</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- VARIABLES GLOBALES --- */
+        /* --- VARIABLES --- */
         :root {
             --cv-bg: #000000;
             --cv-text: #ffffff;
@@ -19,54 +19,38 @@
             --cv-gap: 20px;
         }
 
-        /* --- RESET Y BASE --- */
+        /* --- BASE --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
-            font-family: 'Inter', Helvetica, Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--cv-bg);
             color: var(--cv-text);
-            overflow: hidden; /* Evitamos el scroll nativo del body para usar el container */
+            overflow: hidden; 
         }
 
-        /* --- CONTENEDOR PRINCIPAL (SCROLL SNAP) --- */
+        /* --- CONTENEDOR PRINCIPAL --- */
         .main-scroll-container {
-            height: 100vh; /* Fallback */
-            height: 100dvh; /* Mobile real */
-            width: 100%;
+            height: 100vh; height: 100dvh; width: 100%;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             scroll-behavior: smooth;
-            
-            /* Ocultar barra de scroll vertical general */
-            scrollbar-width: none; 
-            -ms-overflow-style: none;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
         .main-scroll-container::-webkit-scrollbar { display: none; }
 
         /* --- TIPOGRAFÍA --- */
-        h1, h2, h3 {
-            font-family: 'Anton', sans-serif; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
+        h1, h2, h3 { font-family: 'Anton', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;}
         .mono-font { font-family: 'Roboto Mono', monospace; }
 
-        /* --- SECCIONES (PANTALLA COMPLETA) --- */
+        /* --- SECCIONES --- */
         .cv-section {
-            height: 100dvh; 
-            width: 100%;
-            scroll-snap-align: start; 
-            scroll-snap-stop: always;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-            position: relative; 
-            border-bottom: 1px solid #222; 
-            overflow: hidden;
+            height: 100dvh; width: 100%;
+            scroll-snap-align: start; scroll-snap-stop: always;
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative; border-bottom: 1px solid #222; overflow: hidden;
         }
 
-        /* --- HEADERS FLOTANTES --- */
+        /* Headers */
         .section-header {
             position: absolute; top: 20px; left: 0; width: 100%;
             padding: 0 var(--cv-gap); display: flex; justify-content: space-between; align-items: center; z-index: 10;
@@ -89,88 +73,131 @@
             -webkit-overflow-scrolling: touch; width: 100%; height: 100%;
             padding-top: 60px; padding-bottom: 20px;
         }
-
-        /* Barra de Scroll Horizontal (Amarilla) */
+        /* Scrollbar Amarilla (Desktop) */
         .horizontal-track::-webkit-scrollbar { height: 6px; display: block; }
         .horizontal-track::-webkit-scrollbar-track { background: #222; border-radius: 3px; }
         .horizontal-track::-webkit-scrollbar-thumb { background: var(--cv-yellow); border-radius: 3px; cursor: grab; }
         .horizontal-track::-webkit-scrollbar-thumb:hover { background: #fff; }
 
-        /* --- TARJETAS --- */
+        /* ==========================================================================
+           LÓGICA HÍBRIDA DE TARJETAS (LA CLAVE DEL CAMBIO)
+           ========================================================================== */
+        
+        /* 1. ESTILOS COMUNES */
         .story-card {
-            flex: 0 0 320px; height: 75vh;
             position: relative; scroll-snap-align: center;
             border-radius: 12px; overflow: hidden;
             border: 1px solid #333; background: var(--cv-gray);
-            transition: transform 0.3s ease; cursor: pointer;
+            cursor: pointer; transition: transform 0.3s ease;
         }
-        @media (max-width: 768px) { .story-card { flex: 0 0 85vw; height: 70vh; } }
-        .story-card:hover { border-color: var(--cv-yellow); transform: scale(1.02); }
+        .card-media { width: 100%; object-fit: cover; display: block; transition: filter 0.3s; }
+        .card-cat { color: var(--cv-yellow); font-family: 'Roboto Mono'; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block;}
+        .card-headline { color: white; font-family: 'Anton'; margin: 0; line-height: 1.1; }
+        .card-summary { color: #ccc; font-size: 0.85rem; line-height: 1.3; margin-top: 5px; }
 
-        .card-media { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.3s; }
-
-        /* Overlay & Info */
-        .card-overlay {
-            position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px;
-            background: linear-gradient(to top, black 30%, transparent);
-            display: flex; flex-direction: column; gap: 5px; transition: all 0.4s ease;
-        }
+        /* 2. VERSIÓN DESKTOP (Overlay + Hover Reveal) */
         @media (min-width: 769px) {
-            .story-card:hover .card-overlay { background: linear-gradient(to top, black 80%, transparent); padding-bottom: 30px; }
-        }
-
-        .card-cat { color: var(--cv-yellow); font-family: 'Roboto Mono'; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; }
-        .card-headline { color: white; font-size: 1.4rem; line-height: 1.1; font-family: 'Anton'; text-shadow: 1px 1px 2px black; margin:0;}
-        
-        /* Resumen Oculto */
-        .card-summary {
-            font-size: 0.9rem; color: #ddd; line-height: 1.4; max-height: 0; opacity: 0;
-            overflow: hidden; transform: translateY(10px); transition: all 0.4s ease; margin: 0;
-        }
-        @media (min-width: 769px) {
+            .story-card { flex: 0 0 320px; height: 75vh; }
+            .story-card:hover { border-color: var(--cv-yellow); transform: scale(1.02); }
+            
+            .card-media { height: 100%; } /* Imagen ocupa todo */
+            
+            .card-overlay {
+                position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px;
+                background: linear-gradient(to top, black 30%, transparent);
+                display: flex; flex-direction: column; justify-content: flex-end;
+                transition: all 0.4s ease;
+            }
+            .story-card:hover .card-overlay { background: linear-gradient(to top, black 90%, transparent); padding-bottom: 30px; }
+            
+            .card-headline { font-size: 1.6rem; text-shadow: 1px 1px 2px black; }
+            
+            /* Resumen oculto que aparece */
+            .card-summary { max-height: 0; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
             .story-card:hover .card-summary { max-height: 100px; opacity: 1; transform: translateY(0); }
+            
+            /* Play Btn centrado */
+            .play-btn-wrapper { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        }
+
+        /* 3. VERSIÓN MOBILE (Split View: Arriba Video / Abajo Texto) */
+        @media (max-width: 768px) {
+            .story-card {
+                flex: 0 0 85vw; /* Ancho cómodo */
+                height: 72vh;   /* Altura total */
+                display: flex;
+                flex-direction: column; /* Apilamos verticalmente */
+            }
+            
+            /* Parte SUPERIOR: Imagen/Video */
+            .card-media {
+                height: 65%; /* Ocupa el 65% superior */
+                width: 100%;
+            }
+            
+            /* Parte INFERIOR: Texto (Fondo sólido, no overlay) */
+            .card-overlay {
+                height: 35%; /* El 35% restante */
+                background: #111; /* Fondo oscuro sólido */
+                width: 100%;
+                padding: 15px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start; /* Texto arriba del bloque */
+                border-top: 1px solid #333;
+                position: relative; /* Ya no es absolute */
+            }
+            
+            .card-headline { font-size: 1.4rem; text-shadow: none; } /* Sin sombra necesaria */
+            
+            /* Resumen SIEMPRE VISIBLE */
+            .card-summary {
+                max-height: none; 
+                opacity: 1; 
+                transform: none; 
+                display: -webkit-box;
+                -webkit-line-clamp: 3; /* Limitamos a 3 líneas por si es muy largo */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            /* Play Btn centrado en la IMAGEN (no en la tarjeta entera) */
+            .play-btn-wrapper { 
+                top: 32.5%; /* La mitad del 65% de altura de la imagen */
+                left: 50%; transform: translate(-50%, -50%); 
+            }
         }
 
         /* --- BOTÓN PLAY --- */
         .play-btn-wrapper {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; 
             width: 60px; height: 60px; background: rgba(255, 191, 60, 0.9); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.6); z-index: 5; pointer-events: none; border: 2px solid black;
         }
         .play-svg { width: 24px; height: 24px; fill: black; margin-left: 4px; }
 
-        /* --- HERO SECTION --- */
+
+        /* --- ESTILOS ESPECÍFICOS --- */
+        
+        /* Hero */
         .hero-section { background: black; }
         .hero-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; position: absolute; top:0; left:0;}
         .hero-content { position: absolute; bottom: 50px; left: 20px; right: 20px; z-index: 10;}
 
-        /* --- CULTURA (BRUTALIST STYLE) --- */
+        /* Cultura Brutalista */
         .section-culture { background: #000000; }
-        
-        .section-culture .section-title { 
-            color: white; border-left: 10px solid white; 
-            font-size: 2.2rem; letter-spacing: 2px;
-        }
-
-        .section-culture .story-card { 
-            border: 2px solid white; border-radius: 0; 
-            box-shadow: 8px 8px 0px rgba(255,255,255,0.2); 
-        }
-        .section-culture .story-card:hover {
-            border-color: var(--cv-yellow);
-            box-shadow: 8px 8px 0px var(--cv-yellow); 
-        }
-
+        .section-culture .section-title { color: white; border-left: 10px solid white; font-size: 2.2rem; letter-spacing: 2px;}
+        .section-culture .story-card { border: 2px solid white; border-radius: 0; box-shadow: 6px 6px 0px rgba(255,255,255,0.2); }
+        .section-culture .story-card:hover { border-color: var(--cv-yellow); box-shadow: 6px 6px 0px var(--cv-yellow); }
         .section-culture .card-media { filter: grayscale(100%) contrast(1.2); }
         .section-culture .story-card:hover .card-media { filter: grayscale(0%) contrast(1); }
-
-        .section-culture .card-headline { 
-            font-size: 2rem; line-height: 0.9; text-shadow: 2px 2px 0 #000;
-        }
+        .section-culture .card-headline { font-size: 2rem; line-height: 0.9; text-shadow: none; }
+        .section-culture .card-cat { background: white; color: black; padding: 2px 5px; display: inline-block; }
         
-        .section-culture .card-cat {
-            background: white; color: black; padding: 2px 5px; display: inline-block; margin-bottom: 5px;
+        /* Ajuste específico Mobile para Cultura (Fondo blanco en texto para mantener brutalismo) */
+        @media (max-width: 768px) {
+            .section-culture .card-overlay { background: #000; border-top: 2px solid white; }
         }
 
     </style>
@@ -180,8 +207,8 @@
     <div class="main-scroll-container">
 
         <section class="cv-section hero-section">
-            <img src="https://images.unsplash.com/photo-1700681592180-46dbc8232b47?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="hero-bg">
-            <div class="play-btn-wrapper" style="width:90px; height:90px;">
+            <img src="https://images.unsplash.com/photo-1555862124-a4ebf4682cbe?q=80&w=2070" class="hero-bg">
+            <div class="play-btn-wrapper" style="width:90px; height:90px; top:50%;">
                 <svg class="play-svg" style="width:36px; height:36px;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
             <div class="hero-content">
@@ -202,7 +229,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">DEPORTES</span>
                         <h3 class="card-headline">GOL AGÓNICO</h3>
-                        <p class="card-summary">La Lepra ganó en el último minuto con un cabezazo salvador.</p>
+                        <p class="card-summary">La Lepra ganó en el último minuto con un cabezazo salvador ante su gente.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -210,7 +237,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">SOCIEDAD</span>
                         <h3 class="card-headline">SUBE EL BOLETO</h3>
-                        <p class="card-summary">Se confirmó el aumento del transporte desde el lunes.</p>
+                        <p class="card-summary">El ministerio de transporte confirmó el nuevo cuadro tarifario desde el lunes.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -218,7 +245,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">CLIMA</span>
                         <h3 class="card-headline">ALERTA ZONDA</h3>
-                        <p class="card-summary">Rige alerta severa para todo el Gran Mendoza.</p>
+                        <p class="card-summary">Defensa Civil recomienda extremar precauciones. Ráfagas de 80km/h.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -226,15 +253,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">ECONOMÍA</span>
                         <h3 class="card-headline">DÓLAR RÉCORD</h3>
-                        <p class="card-summary">La divisa paralela tocó un nuevo máximo histórico.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1518605348486-9655de646fc4?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">FÚTBOL</span>
-                        <h3 class="card-headline">TOMBA ENTRENA</h3>
-                        <p class="card-summary">Godoy Cruz se prepara para el cruce con River.</p>
+                        <p class="card-summary">La divisa paralela tocó un nuevo máximo histórico en las cuevas del centro.</p>
                     </div>
                 </div>
             </div>
@@ -252,7 +271,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">IA</span>
                         <h3 class="card-headline">CHATGPT EN AULAS</h3>
-                        <p class="card-summary">Pruebas piloto en escuelas de Mendoza.</p>
+                        <p class="card-summary">Pruebas piloto en escuelas de Mendoza para integrar asistentes virtuales.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -261,7 +280,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">MÓVILES</span>
                         <h3 class="card-headline">REVIEW IPHONE 16</h3>
-                        <p class="card-summary">Probamos a fondo el nuevo equipo de Apple.</p>
+                        <p class="card-summary">Probamos a fondo el nuevo equipo. ¿Vale la pena la actualización?</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -270,25 +289,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">GAMING</span>
                         <h3 class="card-headline">GAME FEST</h3>
-                        <p class="card-summary">Resumen del evento gamer del año.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">SEGURIDAD</span>
-                        <h3 class="card-headline">ESTAFA WHATSAPP</h3>
-                        <p class="card-summary">Cuidado con el robo de cuentas y códigos.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">CRYPTO</span>
-                        <h3 class="card-headline">BITCOIN 100K</h3>
-                        <p class="card-summary">La cripto líder rompe todas las barreras.</p>
+                        <p class="card-summary">El evento gamer más grande del oeste argentino reunió a miles de fans.</p>
                     </div>
                 </div>
             </div>
@@ -306,7 +307,7 @@
                     <div class="card-overlay">
                         <span style="background:var(--cv-yellow); color:black; padding:2px 5px; font-weight:bold; width:fit-content;">2.5M VISTAS</span>
                         <h3 class="card-headline">BLOOPER ARQUERO</h3>
-                        <p class="card-summary">El error viral que le costó el campeonato.</p>
+                        <p class="card-summary">El error viral que le costó el campeonato y recorre el mundo.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -315,7 +316,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">TIKTOK</span>
                         <h3 class="card-headline">PERRO QUE HABLA</h3>
-                        <p class="card-summary">El caniche mendocino que dice 'mamá'.</p>
+                        <p class="card-summary">El caniche mendocino que dice 'mamá' sorprende a todos.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -324,16 +325,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">GYM</span>
                         <h3 class="card-headline">CAÍDA EN CINTA</h3>
-                        <p class="card-summary">Quiso correr al máximo y terminó mal.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">FUTURO</span>
-                        <h3 class="card-headline">ROBOT BARISTA</h3>
-                        <p class="card-summary">Así te sirven café en Japón sin humanos.</p>
+                        <p class="card-summary">Quiso correr al máximo y terminó de la peor manera.</p>
                     </div>
                 </div>
             </div>
@@ -350,15 +342,15 @@
                     <div class="card-overlay">
                         <span class="card-cat">VENDIMIA</span>
                         <h3 class="card-headline">CAMINOS DEL VINO</h3>
-                        <p class="card-summary">Ruta de bodegas históricas.</p>
+                        <p class="card-summary">Ruta de bodegas históricas y degustaciones premium.</p>
                     </div>
                 </div>
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1589909202802-8f4aadce1849?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="card-media">
+                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000" class="card-media">
                     <div class="card-overlay">
                         <span class="card-cat">MÚSICA</span>
                         <h3 class="card-headline">RECITAL EN PARQUE</h3>
-                        <p class="card-summary">Bandas en vivo este sábado.</p>
+                        <p class="card-summary">Bandas en vivo este sábado con entrada libre y gratuita.</p>
                     </div>
                 </div>
                 <div class="story-card">
@@ -366,31 +358,7 @@
                     <div class="card-overlay">
                         <span class="card-cat">ARTE</span>
                         <h3 class="card-headline">MUESTRA FADER</h3>
-                        <p class="card-summary">Nueva exposición restaurada.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">TEATRO</span>
-                        <h3 class="card-headline">ESTRENO NAVE</h3>
-                        <p class="card-summary">Teatro experimental hoy.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">MONTAÑA</span>
-                        <h3 class="card-headline">FOGÓN NOCTURNO</h3>
-                        <p class="card-summary">Experiencia en Potrerillos.</p>
-                    </div>
-                </div>
-                <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">EXTREMO</span>
-                        <h3 class="card-headline">RAFTING RÍO</h3>
-                        <p class="card-summary">Aventura en el Río Mendoza.</p>
+                        <p class="card-summary">Nueva exposición restaurada disponible todo el mes.</p>
                     </div>
                 </div>
             </div>
