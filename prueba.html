@@ -80,97 +80,118 @@
         .horizontal-track::-webkit-scrollbar-thumb:hover { background: #fff; }
 
         /* ==========================================================================
-           LÓGICA HÍBRIDA DE TARJETAS (LA CLAVE DEL CAMBIO)
+           LÓGICA HÍBRIDA (VISUAL vs SUMMARY)
            ========================================================================== */
         
-        /* 1. ESTILOS COMUNES */
+        /* 1. CONTENEDOR DE LA HISTORIA */
         .story-card {
             position: relative; scroll-snap-align: center;
-            border-radius: 12px; overflow: hidden;
-            border: 1px solid #333; background: var(--cv-gray);
-            cursor: pointer; transition: transform 0.3s ease;
+            cursor: pointer;
+            /* En mobile, story-card es solo un wrapper invisible */
         }
-        .card-media { width: 100%; object-fit: cover; display: block; transition: filter 0.3s; }
+
+        /* 2. BLOQUE VISUAL (Imagen + Título) */
+        .card-visual {
+            position: relative;
+            overflow: hidden;
+            background: var(--cv-gray);
+            transition: transform 0.3s ease;
+        }
+        
+        .card-media { width: 100%; height: 100%; object-fit: cover; display: block; transition: filter 0.3s; }
+        
+        /* Overlay de Título (Siempre sobre la imagen) */
+        .card-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px;
+            background: linear-gradient(to top, black 30%, transparent);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            transition: all 0.4s ease;
+        }
+
+        /* 3. BLOQUE DE TEXTO (RESUMEN/BAJADA) */
+        .card-summary {
+            color: #bbb; line-height: 1.3; margin: 0;
+            transition: all 0.4s ease;
+        }
+
+        /* Tipografía Interna */
         .card-cat { color: var(--cv-yellow); font-family: 'Roboto Mono'; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block;}
-        .card-headline { color: white; font-family: 'Anton'; margin: 0; line-height: 1.1; }
-        .card-summary { color: #ccc; font-size: 0.85rem; line-height: 1.3; margin-top: 5px; }
+        .card-headline { color: white; font-family: 'Anton'; margin: 0; line-height: 1.1; font-size: 1.5rem; text-shadow: 1px 1px 2px black;}
 
-        /* 2. VERSIÓN DESKTOP (Overlay + Hover Reveal) */
+
+        /* --- MEDIA QUERY: DESKTOP (Efecto Hover Completo) --- */
         @media (min-width: 769px) {
-            .story-card { flex: 0 0 320px; height: 75vh; }
-            .story-card:hover { border-color: var(--cv-yellow); transform: scale(1.02); }
-            
-            .card-media { height: 100%; } /* Imagen ocupa todo */
-            
-            .card-overlay {
-                position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px;
-                background: linear-gradient(to top, black 30%, transparent);
-                display: flex; flex-direction: column; justify-content: flex-end;
-                transition: all 0.4s ease;
+            .story-card {
+                flex: 0 0 320px; 
+                height: 75vh;
+                /* En desktop, la tarjeta contiene todo y tiene el borde */
+                border: 1px solid #333; 
+                border-radius: 12px;
+                background: var(--cv-gray);
+                overflow: hidden; /* Corta todo lo que salga */
             }
-            .story-card:hover .card-overlay { background: linear-gradient(to top, black 90%, transparent); padding-bottom: 30px; }
-            
-            .card-headline { font-size: 1.6rem; text-shadow: 1px 1px 2px black; }
-            
-            /* Resumen oculto que aparece */
-            .card-summary { max-height: 0; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
-            .story-card:hover .card-summary { max-height: 100px; opacity: 1; transform: translateY(0); }
-            
-            /* Play Btn centrado */
-            .play-btn-wrapper { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+            .story-card:hover { border-color: var(--cv-yellow); transform: scale(1.02); }
+
+            .card-visual {
+                height: 100%; /* Ocupa toda la tarjeta */
+                width: 100%;
+            }
+
+            /* El resumen está absoluto "dentro" del overlay visual, oculto */
+            .card-summary {
+                position: absolute; bottom: 20px; left: 20px; right: 20px;
+                font-size: 0.9rem;
+                max-height: 0; opacity: 0; 
+                transform: translateY(10px);
+                z-index: 20;
+            }
+
+            /* Al pasar el mouse, sube el gradiente y aparece el resumen */
+            .story-card:hover .card-overlay { 
+                background: linear-gradient(to top, black 90%, transparent); 
+                padding-bottom: 30px; /* Hace espacio */
+                height: 100%; /* Oscurece más */
+            }
+            .story-card:hover .card-summary {
+                max-height: 100px; opacity: 1; transform: translateY(0);
+            }
         }
 
-        /* 3. VERSIÓN MOBILE (Split View: Arriba Video / Abajo Texto) */
+        /* --- MEDIA QUERY: MOBILE (Bajada afuera) --- */
         @media (max-width: 768px) {
             .story-card {
-                flex: 0 0 85vw; /* Ancho cómodo */
-                height: 72vh;   /* Altura total */
-                display: flex;
-                flex-direction: column; /* Apilamos verticalmente */
-            }
-            
-            /* Parte SUPERIOR: Imagen/Video */
-            .card-media {
-                height: 65%; /* Ocupa el 65% superior */
-                width: 100%;
-            }
-            
-            /* Parte INFERIOR: Texto (Fondo sólido, no overlay) */
-            .card-overlay {
-                height: 35%; /* El 35% restante */
-                background: #111; /* Fondo oscuro sólido */
-                width: 100%;
-                padding: 15px;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-start; /* Texto arriba del bloque */
-                border-top: 1px solid #333;
-                position: relative; /* Ya no es absolute */
-            }
-            
-            .card-headline { font-size: 1.4rem; text-shadow: none; } /* Sin sombra necesaria */
-            
-            /* Resumen SIEMPRE VISIBLE */
-            .card-summary {
-                max-height: none; 
-                opacity: 1; 
-                transform: none; 
-                display: -webkit-box;
-                -webkit-line-clamp: 3; /* Limitamos a 3 líneas por si es muy largo */
-                -webkit-box-orient: vertical;
-                overflow: hidden;
+                flex: 0 0 85vw; /* Ancho tarjeta */
+                height: auto;   /* Altura automática para que crezca */
+                display: flex; flex-direction: column; gap: 10px;
             }
 
-            /* Play Btn centrado en la IMAGEN (no en la tarjeta entera) */
-            .play-btn-wrapper { 
-                top: 32.5%; /* La mitad del 65% de altura de la imagen */
-                left: 50%; transform: translate(-50%, -50%); 
+            .card-visual {
+                height: 60vh; /* Altura fija solo para la imagen/video */
+                border-radius: 12px;
+                border: 1px solid #333;
+            }
+
+            /* Overlay solo oscurece la parte baja para el título */
+            .card-overlay {
+                background: linear-gradient(to top, black 60%, transparent);
+            }
+
+            /* El resumen queda FUERA, estático, debajo de la tarjeta */
+            .card-summary {
+                display: block;
+                opacity: 1;
+                font-size: 0.9rem;
+                padding: 0 5px; /* Un poco de margen lateral */
+                max-height: none;
+                transform: none;
+                /* Limitamos a 3 líneas */
+                display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
             }
         }
 
         /* --- BOTÓN PLAY --- */
         .play-btn-wrapper {
-            position: absolute; 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 60px; height: 60px; background: rgba(255, 191, 60, 0.9); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 20px rgba(0,0,0,0.6); z-index: 5; pointer-events: none; border: 2px solid black;
@@ -188,17 +209,22 @@
         /* Cultura Brutalista */
         .section-culture { background: #000000; }
         .section-culture .section-title { color: white; border-left: 10px solid white; font-size: 2.2rem; letter-spacing: 2px;}
-        .section-culture .story-card { border: 2px solid white; border-radius: 0; box-shadow: 6px 6px 0px rgba(255,255,255,0.2); }
-        .section-culture .story-card:hover { border-color: var(--cv-yellow); box-shadow: 6px 6px 0px var(--cv-yellow); }
+        
+        /* En Desktop el borde va a la card, en Mobile al visual */
+        @media (min-width: 769px) {
+            .section-culture .story-card { border: 2px solid white; border-radius: 0; box-shadow: 6px 6px 0px rgba(255,255,255,0.2); }
+            .section-culture .story-card:hover { border-color: var(--cv-yellow); box-shadow: 6px 6px 0px var(--cv-yellow); }
+        }
+        @media (max-width: 768px) {
+            .section-culture .card-visual { border: 2px solid white; border-radius: 0; box-shadow: 6px 6px 0px rgba(255,255,255,0.2); }
+        }
+
         .section-culture .card-media { filter: grayscale(100%) contrast(1.2); }
         .section-culture .story-card:hover .card-media { filter: grayscale(0%) contrast(1); }
+        
         .section-culture .card-headline { font-size: 2rem; line-height: 0.9; text-shadow: none; }
         .section-culture .card-cat { background: white; color: black; padding: 2px 5px; display: inline-block; }
-        
-        /* Ajuste específico Mobile para Cultura (Fondo blanco en texto para mantener brutalismo) */
-        @media (max-width: 768px) {
-            .section-culture .card-overlay { background: #000; border-top: 2px solid white; }
-        }
+        .section-culture .card-summary { color: #999; }
 
     </style>
 </head>
@@ -208,7 +234,7 @@
 
         <section class="cv-section hero-section">
             <img src="https://images.unsplash.com/photo-1700681592180-46dbc8232b47?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="hero-bg">
-            <div class="play-btn-wrapper" style="width:90px; height:90px; top:50%;">
+            <div class="play-btn-wrapper" style="width:90px; height:90px;">
                 <svg class="play-svg" style="width:36px; height:36px;" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </div>
             <div class="hero-content">
@@ -225,36 +251,47 @@
             </div>
             <div class="horizontal-track">
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">DEPORTES</span>
-                        <h3 class="card-headline">GOL AGÓNICO</h3>
-                        <p class="card-summary">La Lepra ganó en el último minuto con un cabezazo salvador ante su gente.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">DEPORTES</span>
+                            <h3 class="card-headline">GOL AGÓNICO</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">La Lepra ganó en el último minuto con un cabezazo salvador ante su gente.</p>
                 </div>
+                
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">SOCIEDAD</span>
-                        <h3 class="card-headline">SUBE EL BOLETO</h3>
-                        <p class="card-summary">El ministerio de transporte confirmó el nuevo cuadro tarifario desde el lunes.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1495020689067-958852a7765e?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">SOCIEDAD</span>
+                            <h3 class="card-headline">SUBE EL BOLETO</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">El ministerio de transporte confirmó el nuevo cuadro tarifario desde el lunes.</p>
                 </div>
+
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">CLIMA</span>
-                        <h3 class="card-headline">ALERTA ZONDA</h3>
-                        <p class="card-summary">Defensa Civil recomienda extremar precauciones. Ráfagas de 80km/h.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">CLIMA</span>
+                            <h3 class="card-headline">ALERTA ZONDA</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Defensa Civil recomienda extremar precauciones. Ráfagas de 80km/h.</p>
                 </div>
+
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1623118176012-9b0c6fa0712d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">ECONOMÍA</span>
-                        <h3 class="card-headline">DÓLAR RÉCORD</h3>
-                        <p class="card-summary">La divisa paralela tocó un nuevo máximo histórico en las cuevas del centro.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1623118176012-9b0c6fa0712d?q=80&w=2070" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">ECONOMÍA</span>
+                            <h3 class="card-headline">DÓLAR RÉCORD</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">La divisa paralela tocó un nuevo máximo histórico en las cuevas del centro.</p>
                 </div>
             </div>
         </section>
@@ -266,31 +303,39 @@
             </div>
             <div class="horizontal-track">
                 <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=2070" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">IA</span>
-                        <h3 class="card-headline">CHATGPT EN AULAS</h3>
-                        <p class="card-summary">Pruebas piloto en escuelas de Mendoza para integrar asistentes virtuales.</p>
+                    <div class="card-visual">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=2070" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">IA</span>
+                            <h3 class="card-headline">CHATGPT EN AULAS</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Pruebas piloto en escuelas de Mendoza para integrar asistentes virtuales.</p>
                 </div>
+
                 <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">MÓVILES</span>
-                        <h3 class="card-headline">REVIEW IPHONE 16</h3>
-                        <p class="card-summary">Probamos a fondo el nuevo equipo. ¿Vale la pena la actualización?</p>
+                    <div class="card-visual">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">MÓVILES</span>
+                            <h3 class="card-headline">REVIEW IPHONE 16</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Probamos a fondo el nuevo equipo. ¿Vale la pena la actualización?</p>
                 </div>
+
                 <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">GAMING</span>
-                        <h3 class="card-headline">GAME FEST</h3>
-                        <p class="card-summary">El evento gamer más grande del oeste argentino reunió a miles de fans.</p>
+                    <div class="card-visual">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">GAMING</span>
+                            <h3 class="card-headline">GAME FEST</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">El evento gamer más grande del oeste argentino reunió a miles de fans.</p>
                 </div>
             </div>
         </section>
@@ -301,32 +346,40 @@
                 <div class="swipe-hint">MÁS VIDEOS <span>&rarr;</span></div>
             </div>
             <div class="horizontal-track">
-                <div class="story-card" style="border: 2px solid var(--cv-yellow);">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span style="background:var(--cv-yellow); color:black; padding:2px 5px; font-weight:bold; width:fit-content;">2.5M VISTAS</span>
-                        <h3 class="card-headline">BLOOPER ARQUERO</h3>
-                        <p class="card-summary">El error viral que le costó el campeonato y recorre el mundo.</p>
-                    </div>
-                </div>
                 <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1496360166961-10a51d5f367a?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">TIKTOK</span>
-                        <h3 class="card-headline">PERRO QUE HABLA</h3>
-                        <p class="card-summary">El caniche mendocino que dice 'mamá' sorprende a todos.</p>
+                    <div class="card-visual" style="border:2px solid var(--cv-yellow);">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span style="background:var(--cv-yellow); color:black; padding:2px 5px; font-weight:bold; width:fit-content;">2.5M VISTAS</span>
+                            <h3 class="card-headline">BLOOPER ARQUERO</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">El error viral que le costó el campeonato y recorre el mundo.</p>
                 </div>
+
                 <div class="story-card">
-                    <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-                    <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">GYM</span>
-                        <h3 class="card-headline">CAÍDA EN CINTA</h3>
-                        <p class="card-summary">Quiso correr al máximo y terminó de la peor manera.</p>
+                    <div class="card-visual">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1496360166961-10a51d5f367a?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">TIKTOK</span>
+                            <h3 class="card-headline">PERRO QUE HABLA</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">El caniche mendocino que dice 'mamá' sorprende a todos.</p>
+                </div>
+
+                <div class="story-card">
+                    <div class="card-visual">
+                        <div class="play-btn-wrapper"><svg class="play-svg" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+                        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">GYM</span>
+                            <h3 class="card-headline">CAÍDA EN CINTA</h3>
+                        </div>
+                    </div>
+                    <p class="card-summary">Quiso correr al máximo y terminó de la peor manera.</p>
                 </div>
             </div>
         </section>
@@ -338,28 +391,36 @@
             </div>
             <div class="horizontal-track">
                 <div class="story-card">
-                    <img src="https://plus.unsplash.com/premium_photo-1719997502960-9b6f659b28bf?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">VENDIMIA</span>
-                        <h3 class="card-headline">CAMINOS DEL VINO</h3>
-                        <p class="card-summary">Ruta de bodegas históricas y degustaciones premium.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">VENDIMIA</span>
+                            <h3 class="card-headline">CAMINOS DEL VINO</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Ruta de bodegas históricas y degustaciones premium.</p>
                 </div>
+
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">MÚSICA</span>
-                        <h3 class="card-headline">RECITAL EN PARQUE</h3>
-                        <p class="card-summary">Bandas en vivo este sábado con entrada libre y gratuita.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">MÚSICA</span>
+                            <h3 class="card-headline">RECITAL EN PARQUE</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Bandas en vivo este sábado con entrada libre y gratuita.</p>
                 </div>
+
                 <div class="story-card">
-                    <img src="https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=1000" class="card-media">
-                    <div class="card-overlay">
-                        <span class="card-cat">ARTE</span>
-                        <h3 class="card-headline">MUESTRA FADER</h3>
-                        <p class="card-summary">Nueva exposición restaurada disponible todo el mes.</p>
+                    <div class="card-visual">
+                        <img src="https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=1000" class="card-media">
+                        <div class="card-overlay">
+                            <span class="card-cat">ARTE</span>
+                            <h3 class="card-headline">MUESTRA FADER</h3>
+                        </div>
                     </div>
+                    <p class="card-summary">Nueva exposición restaurada disponible todo el mes.</p>
                 </div>
             </div>
         </section>
